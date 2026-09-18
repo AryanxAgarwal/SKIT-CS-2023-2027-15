@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from frame_ingest_validator import validate_ingest
+from tests.frame_ingest_validator import validate_ingest
 
 
 class TestFrameIngestValidator(unittest.TestCase):
