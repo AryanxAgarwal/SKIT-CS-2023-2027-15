@@ -1,0 +1,11 @@
+# Sprint 1 hardware config
+# Edit these to match your actual camera and target board.
+
+camera_index: 0        # output of `ls /dev/video*` — usually 0 for the first camera
+width: 640
+height: 480
+target_fps: 30
+
+# Where save_frames_metadata.py writes frames/ and metadata.csv
+# (kept outside the repo root so it's easy to .gitignore)
+save_path: "../../dataset"
