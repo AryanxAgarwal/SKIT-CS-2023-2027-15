@@ -1,0 +1,22 @@
+# Full dataset - never commit
+dataset/
+**/frames/
+*.mp4
+*.avi
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets
+*.env
+wifi_credentials.txt
+*.key
+*password*
+*token*
+
+# OS/editor junk
+.DS_Store
+.vscode/
