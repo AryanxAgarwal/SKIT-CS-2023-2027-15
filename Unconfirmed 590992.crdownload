@@ -1,0 +1,121 @@
+"""
+Slices labeled_features.csv (per-frame rows) into overlapping windows of
+consecutive frames -- the actual shape the classifier trains on. This is
+a separate step/commit from labeling itself.
+
+Handles two real data-quality issues found in your recorded footage:
+  1. EAR values are occasionally physically impossible (>0.5) during
+     extreme head-tilt frames, where MediaPipe's landmark tracking
+     degrades. These are clipped to a sane range so they don't corrupt
+     training, rather than teaching the model nonsense.
+  2. "distracted_no_face" rows have no real feature values (no face was
+     found). They're filled with a sentinel (0.0 for every feature) --
+     the model still sees these as a real, labeled window (not-alert),
+     it just has no measurements for that moment, which is itself
+     meaningful information (face not visible to the camera).
+
+Windows never cross a clip boundary (frame N+1 of yawn.mp4 is never
+placed next to frame 1 of head_nod.mp4) -- each clip is windowed
+independently, then all windows are pooled together.
+
+Usage:
+    python build_dataset.py
+    python build_dataset.py --window 30 --stride 10
+Output:
+    dataset.npz containing X (n_windows, window, 7) and y (n_windows,) binary
+"""
+
+import argparse
+import csv
+from collections import defaultdict
+
+import numpy as np
+
+FEATURES = ["ear", "mar", "head_pitch", "head_yaw", "head_roll", "gaze_vertical", "gaze_horizontal"]
+
+# Physically sane bounds -- anything outside this is treated as corrupted
+# tracking, not a real measurement, and clipped rather than trusted.
+FEATURE_BOUNDS = {
+    "ear": (0.0, 0.5),
+    "mar": (0.0, 1.2),
+    "head_pitch": (-60.0, 60.0),
+    "head_yaw": (-60.0, 60.0),
+    "head_roll": (-60.0, 60.0),
+    "gaze_vertical": (0.0, 1.0),
+    "gaze_horizontal": (0.0, 1.0),
+}
+
+
+def load_rows(path):
+    with open(path, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def row_to_feature_vector(row):
+    if row["face_detected"] == "False":
+        return [0.0] * len(FEATURES)  # sentinel: no face measurable this frame
+    vec = []
+    for feat in FEATURES:
+        val = float(row[feat])
+        lo, hi = FEATURE_BOUNDS[feat]
+        vec.append(float(np.clip(val, lo, hi)))
+    return vec
+
+
+def build_windows(rows, window: int, stride: int):
+    by_clip = defaultdict(list)
+    for row in rows:
+        by_clip[row["source_clip"]].append(row)
+
+    X, y, clip_source = [], [], []
+    clipped_count = 0
+
+    for clip_name, clip_rows in by_clip.items():
+        clip_rows.sort(key=lambda r: int(r["frame"]))  # ensure temporal order
+
+        feats = []
+        drowsy_flags = []
+        for row in clip_rows:
+            vec = row_to_feature_vector(row)
+            if row["face_detected"] != "False" and float(row["ear"]) > FEATURE_BOUNDS["ear"][1]:
+                clipped_count += 1
+            feats.append(vec)
+            drowsy_flags.append(row["drowsy"] == "True")
+
+        n = len(feats)
+        for start in range(0, n - window + 1, stride):
+            window_feats = feats[start:start + window]
+            window_flags = drowsy_flags[start:start + window]
+            label = 1 if sum(window_flags) > (window / 2) else 0  # majority vote
+            X.append(window_feats)
+            y.append(label)
+            clip_source.append(clip_name)
+
+    print(f"Clipped {clipped_count} out-of-range EAR readings to the sane bound.")
+    return np.array(X, dtype=np.float32), np.array(y, dtype=np.int64), clip_source
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--in", dest="in_path", default="labeled_features.csv")
+    parser.add_argument("--out", dest="out_path", default="dataset.npz")
+    parser.add_argument("--window", type=int, default=30)
+    parser.add_argument("--stride", type=int, default=10)
+    args = parser.parse_args()
+
+    rows = load_rows(args.in_path)
+    X, y, clip_source = build_windows(rows, args.window, args.stride)
+
+    np.savez(args.out_path, X=X, y=y, clip_source=np.array(clip_source), features=np.array(FEATURES))
+
+    print(f"\nBuilt {len(X)} windows of shape ({args.window}, {len(FEATURES)})")
+    print(f"Class balance: alert={sum(y==0)}  not_alert={sum(y==1)}")
+
+    from collections import Counter
+    per_clip = Counter(clip_source)
+    print("Windows per clip:", dict(per_clip))
+    print(f"Wrote {args.out_path}")
+
+
+if __name__ == "__main__":
+    main()
