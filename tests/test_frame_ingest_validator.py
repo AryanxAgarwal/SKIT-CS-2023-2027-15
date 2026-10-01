@@ -119,6 +119,52 @@ class TestInvalidDataset(TestFrameIngestValidator):
                 )
             )
 
+    def test_duplicate_frame_id_is_detected(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            frames_dir, metadata_csv = (
+                self.create_valid_dataset(temp_dir)
+            )
+
+            with metadata_csv.open(
+                "r",
+                newline="",
+                encoding="utf-8"
+            ) as file:
+                rows = list(csv.DictReader(file))
+
+            rows[1]["frame_id"] = rows[0]["frame_id"]
+
+            with metadata_csv.open(
+                "w",
+                newline="",
+                encoding="utf-8"
+            ) as file:
+                writer = csv.DictWriter(
+                    file,
+                    fieldnames=[
+                        "frame_id",
+                        "filename",
+                        "timestamp",
+                        "width",
+                        "height",
+                        "fps_at_capture",
+                    ],
+                )
+
+                writer.writeheader()
+                writer.writerows(rows)
+
+            errors = validate_ingest(
+                frames_dir,
+                metadata_csv
+            )
+
+            self.assertTrue(
+                any(
+                    "Duplicate frame_id" in error
+                    for error in errors
+                )
+            )
 
 if __name__ == "__main__":
     unittest.main()
