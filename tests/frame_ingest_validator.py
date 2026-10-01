@@ -77,11 +77,20 @@ def validate_ingest(frames_dir, metadata_csv):
         )
         return errors
 
+    frame_ids = []
     metadata_filenames = []
 
     for row_number, row in enumerate(rows, start=2):
         filename = row["filename"]
         metadata_filenames.append(filename)
+
+        try:
+            frame_id = int(row["frame_id"])
+        except ValueError:
+            frame_id = None
+
+        if frame_id is not None:
+            frame_ids.append(frame_id)
 
         if not FRAME_NAME_PATTERN.match(
             Path(filename).name
@@ -151,6 +160,11 @@ def validate_ingest(frames_dir, metadata_csv):
     ):
         errors.append(
             "Duplicate filenames found in metadata."
+        )
+
+    if len(frame_ids) != len(set(frame_ids)):
+        errors.append(
+            "Duplicate frame_id values found in metadata."
         )
 
     return errors
