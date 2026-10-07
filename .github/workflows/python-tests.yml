@@ -24,3 +24,7 @@ jobs:
       - name: Run frame ingest tests
         run: |
           python -m unittest tests.test_frame_ingest_validator -v
+
+      - name: Run model validation tests
+        run: |
+          python -m unittest evaluation.tests.test_evaluator -v

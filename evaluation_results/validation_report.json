@@ -1,0 +1,44 @@
+{
+  "dataset": {
+    "path": "dataset.npz",
+    "samples": 383,
+    "shape": [
+      383,
+      30,
+      7
+    ],
+    "labels": {
+      "class_0": 92,
+      "class_1": 291
+    }
+  },
+  "model_input_validation": {
+    "expected_shape": [
+      30,
+      8
+    ],
+    "actual_shape": [
+      30,
+      7
+    ],
+    "timesteps_match": true,
+    "features_match": false,
+    "compatible": false
+  },
+  "execution_benchmark": {
+    "elapsed_seconds": 3.7997961044311523e-06,
+    "samples_processed": 383,
+    "samples_per_second": 100794882.00784314
+  },
+  "model_status": {
+    "trained_checkpoint": false,
+    "tensorflow_available": false,
+    "inference_evaluation": false
+  },
+  "evaluation_status": {
+    "dataset_validation": true,
+    "input_schema_validation": false,
+    "model_metrics_available": false,
+    "loss_curve_available": false
+  }
+}
