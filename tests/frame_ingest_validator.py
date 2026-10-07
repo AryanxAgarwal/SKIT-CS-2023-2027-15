@@ -82,7 +82,7 @@ def validate_ingest(frames_dir, metadata_csv):
 
     for row_number, row in enumerate(rows, start=2):
         filename = row["filename"]
-        metadata_filenames.append(filename)
+        metadata_filenames.append(Path(filename).name)
 
         try:
             frame_id = int(row["frame_id"])
