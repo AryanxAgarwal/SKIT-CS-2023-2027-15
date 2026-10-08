@@ -1,0 +1,25 @@
+Sprint 2 Resource Consumption Monitor
+Label: frame_augmentation
+Started: 2026-10-15T14:00:00
+Monitored command: python3 preprocessing_script.py
+Sampling interval: 5s
+----------------------------------------------------------------------
+ elapsed_s    cpu_%    ram_%   temp_C
+       5.0     62.3     48.1     58.2
+      10.0     65.7     48.4     59.0
+      15.0     61.9     48.3     58.7
+      20.0     64.2     48.5     59.3
+      25.0     62.8     48.2     58.9
+
+----------------------------------------------------------------------
+Finished: 2026-10-15T14:05:00
+Total runtime: 300.0s
+Average CPU %: 63.1
+Peak CPU %: 71.4
+Average RAM %: 48.3
+Peak RAM %: 50.1
+Peak temp C: 61.5
+
+NOTE: This is a TEMPLATE showing the format `resource_monitor.py` produces.
+Replace this file with your real output from monitoring an actual (or
+representative) preprocessing run on the target board.
