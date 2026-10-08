@@ -1,148 +1,148 @@
-# """
-# Basic CNN architecture for driver drowsiness detection.
-# """
+"""
+Basic CNN architecture for driver drowsiness detection.
+"""
 
-# from tensorflow.keras import Sequential
-# from tensorflow.keras.layers import Input, Conv1D, MaxPooling1D
-
-
-# def build_cnn_model(timesteps=30, features=8):
-#     model = Sequential([
-#         Input(shape=(timesteps, features)),
-
-#         # First convolution block
-#         Conv1D(
-#             filters=32,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-
-#         # Second convolution block
-#         Conv1D(
-#             filters=64,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-#     ])
-
-#     return model
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Input, Conv1D, MaxPooling1D
 
 
-# if __name__ == "__main__":
-#     model = build_cnn_model()
-#     model.summary()
+def build_cnn_model(timesteps=30, features=8):
+    model = Sequential([
+        Input(shape=(timesteps, features)),
+
+        # First convolution block
+        Conv1D(
+            filters=32,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+
+        # Second convolution block
+        Conv1D(
+            filters=64,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+    ])
+
+    return model
 
 
-# """
-# Commit 2: Add dense fully connected layers.
-# """
-
-# from tensorflow.keras import Sequential
-# from tensorflow.keras.layers import (
-#     Input,
-#     Conv1D,
-#     MaxPooling1D,
-#     GlobalAveragePooling1D,
-#     Dense,
-# )
+if __name__ == "__main__":
+    model = build_cnn_model()
+    model.summary()
 
 
-# def build_cnn_model(timesteps=30, features=8):
-#     model = Sequential([
-#         # Input layer
-#         Input(shape=(timesteps, features)),
+"""
+Commit 2: Add dense fully connected layers.
+"""
 
-#         # Convolutional layers
-#         Conv1D(
-#             filters=32,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-
-#         Conv1D(
-#             filters=64,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-
-#         # Feature aggregation
-#         GlobalAveragePooling1D(),
-
-#         # Fully connected layers
-#         Dense(64, activation="relu"),
-#         Dense(32, activation="relu"),
-#     ])
-
-#     return model
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import (
+    Input,
+    Conv1D,
+    MaxPooling1D,
+    GlobalAveragePooling1D,
+    Dense,
+)
 
 
-# if __name__ == "__main__":
-#     model = build_cnn_model()
-#     model.summary()
+def build_cnn_model(timesteps=30, features=8):
+    model = Sequential([
+        # Input layer
+        Input(shape=(timesteps, features)),
+
+        # Convolutional layers
+        Conv1D(
+            filters=32,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+
+        Conv1D(
+            filters=64,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+
+        # Feature aggregation
+        GlobalAveragePooling1D(),
+
+        # Fully connected layers
+        Dense(64, activation="relu"),
+        Dense(32, activation="relu"),
+    ])
+
+    return model
 
 
-# """
-# Commit 3: Add dropout regularization.
-# """
-
-# from tensorflow.keras import Sequential
-# from tensorflow.keras.layers import (
-#     Input,
-#     Conv1D,
-#     MaxPooling1D,
-#     GlobalAveragePooling1D,
-#     Dense,
-#     Dropout,
-# )
+if __name__ == "__main__":
+    model = build_cnn_model()
+    model.summary()
 
 
-# def build_cnn_model(timesteps=30, features=8):
-#     model = Sequential([
-#         # Input layer
-#         Input(shape=(timesteps, features)),
+"""
+Commit 3: Add dropout regularization.
+"""
 
-#         # Convolutional layers
-#         Conv1D(
-#             filters=32,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-
-#         Conv1D(
-#             filters=64,
-#             kernel_size=3,
-#             activation="relu",
-#             padding="same"
-#         ),
-#         MaxPooling1D(pool_size=2),
-
-#         # Feature aggregation
-#         GlobalAveragePooling1D(),
-
-#         # Fully connected layers
-#         Dense(64, activation="relu"),
-#         Dropout(0.5),
-
-#         Dense(32, activation="relu"),
-#         Dropout(0.25),
-#     ])
-
-#     return model
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import (
+    Input,
+    Conv1D,
+    MaxPooling1D,
+    GlobalAveragePooling1D,
+    Dense,
+    Dropout,
+)
 
 
-# if __name__ == "__main__":
-#     model = build_cnn_model()
-#     model.summary()
+def build_cnn_model(timesteps=30, features=8):
+    model = Sequential([
+        # Input layer
+        Input(shape=(timesteps, features)),
+
+        # Convolutional layers
+        Conv1D(
+            filters=32,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+
+        Conv1D(
+            filters=64,
+            kernel_size=3,
+            activation="relu",
+            padding="same"
+        ),
+        MaxPooling1D(pool_size=2),
+
+        # Feature aggregation
+        GlobalAveragePooling1D(),
+
+        # Fully connected layers
+        Dense(64, activation="relu"),
+        Dropout(0.5),
+
+        Dense(32, activation="relu"),
+        Dropout(0.25),
+    ])
+
+    return model
+
+
+if __name__ == "__main__":
+    model = build_cnn_model()
+    model.summary()
 
 
 """
