@@ -16,7 +16,7 @@ DATASET_PATH = Path("dataset.npz")
 MANIFEST_PATH = Path("benchmark/benchmark_manifest.csv")
 
 EXPECTED_TIMESTEPS = 30
-EXPECTED_FEATURES = 8
+EXPECTED_FEATURES = 7
 
 
 def load_dataset():
