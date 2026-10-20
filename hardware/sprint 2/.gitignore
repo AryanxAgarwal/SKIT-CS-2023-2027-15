@@ -1,0 +1,22 @@
+# Full dataset / tensor dumps - never commit
+dataset/
+**/frames/
+*.npy
+*.pt
+*.pth
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets
+*.env
+*.key
+*password*
+*token*
+
+# OS/editor junk
+.DS_Store
+.vscode/

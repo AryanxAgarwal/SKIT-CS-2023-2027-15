@@ -1,0 +1,12 @@
+Pipeline Health Check
+Rows checked: 50
+Issues found: 0
+------------------------------------------------------------
+RESULT: PASS — pipeline is consistent
+
+NOTE: This is a TEMPLATE showing the expected output format of
+`pipeline_health_check.py`. Replace with your real output:
+
+    python3 scripts/pipeline_health_check.py --dataset ../../sprint1/dataset --report ../logs/health_check_report_<date>.txt
+
+and commit the resulting file instead of this one.

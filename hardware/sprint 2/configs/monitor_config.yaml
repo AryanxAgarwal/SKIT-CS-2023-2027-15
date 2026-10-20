@@ -1,0 +1,2 @@
+# Sprint 2 bridging-task config
+interval_sec: 5   # how often resource_monitor.py samples CPU/RAM/temp
