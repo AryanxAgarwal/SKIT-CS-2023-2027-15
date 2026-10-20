@@ -100,24 +100,15 @@ class TestModelValidationEngine(unittest.TestCase):
         )
 
     def test_input_schema_matches_dataset(self):
-    self.run_evaluator()
+        self.run_evaluator()
 
-    report = self.load_report()
-    validation = report["model_input_validation"]
+        report = self.load_report()
+        validation = report["model_input_validation"]
 
-    self.assertEqual(
-        validation["expected_shape"],
-        [30, 7]
-    )
-
-    self.assertEqual(
-        validation["actual_shape"],
-        [30, 7]
-    )
-
-    self.assertTrue(validation["timesteps_match"])
-    self.assertTrue(validation["features_match"])
-    self.assertTrue(validation["compatible"])
+        self.assertEqual(
+            validation["expected_shape"],
+            [30, 7]
+        )
 
         self.assertEqual(
             validation["actual_shape"],
