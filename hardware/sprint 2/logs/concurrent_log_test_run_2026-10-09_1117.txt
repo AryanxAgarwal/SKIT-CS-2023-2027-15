@@ -1,0 +1,25 @@
+Sprint 2 Concurrent Load Test
+Label: test_run
+Started: 2026-10-09T11:17:02.312648
+Capture-side command: python dummy_workload.py
+Preprocessing-side command: python dummy_workload.py
+Sampling interval: 2s
+----------------------------------------------------------------------------
+ elapsed_s    cpu_%    ram_%   temp_C  capture_alive  preprocess_alive
+       0.0      9.6     61.7      n/a           True              True
+       2.0     15.5     62.1      n/a           True              True
+       4.0      8.1     62.0      n/a           True              True
+       6.1     13.8     62.1      n/a           True              True
+       8.1      5.1     62.0      n/a           True              True
+      10.1      7.7     62.0      n/a           True              True
+      12.1      4.5     61.9      n/a           True              True
+      14.1      3.7     61.8      n/a           True              True
+
+----------------------------------------------------------------------------
+Finished: 2026-10-09T11:17:18.404097
+Total runtime: 16.1s
+Average CPU %: 8.5
+Peak CPU %: 15.5
+Average RAM %: 62.0
+Peak RAM %: 62.1
+Peak temp C: n/a
