@@ -1,0 +1,107 @@
+{
+  "note": "single-person data; same-person performance only",
+  "baseline_logreg": {
+    "val": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      }
+    },
+    "test": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      }
+    }
+  },
+  "cnn": {
+    "val": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      },
+      "per_clip": {
+        "eyes_closed.mp4": {
+          "n": 2,
+          "accuracy": 1.0
+        },
+        "head_tilt_left.mp4": {
+          "n": 1,
+          "accuracy": 1.0
+        },
+        "head_tilt_right.mp4": {
+          "n": 3,
+          "accuracy": 1.0
+        },
+        "normal.mp4": {
+          "n": 9,
+          "accuracy": 1.0
+        },
+        "phone_glance.mp4": {
+          "n": 5,
+          "accuracy": 1.0
+        },
+        "yawn.mp4": {
+          "n": 2,
+          "accuracy": 1.0
+        }
+      }
+    },
+    "test": {
+      "accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      },
+      "per_clip": {
+        "eyes_closed.mp4": {
+          "n": 2,
+          "accuracy": 1.0
+        },
+        "head_tilt_left.mp4": {
+          "n": 1,
+          "accuracy": 1.0
+        },
+        "head_tilt_right.mp4": {
+          "n": 3,
+          "accuracy": 1.0
+        },
+        "normal.mp4": {
+          "n": 9,
+          "accuracy": 1.0
+        },
+        "phone_glance.mp4": {
+          "n": 5,
+          "accuracy": 1.0
+        },
+        "yawn.mp4": {
+          "n": 2,
+          "accuracy": 1.0
+        }
+      }
+    }
+  }
+}
