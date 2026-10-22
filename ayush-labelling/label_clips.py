@@ -1,95 +1,126 @@
-"""
-Takes raw_features.csv (from extract_features.py) and attaches labels
-based on which clip each row came from -- a separate step/commit from
-extraction itself.
-
-Usage:
-    python label_clips.py
-    python label_clips.py --in raw_features.csv --out labeled_features.csv
-"""
 
 import argparse
-import csv
+from pathlib import Path
 
-# Map: filename (as it appears in source_clip) -> (behavior label, drowsy)
-# drowsy: 1 = Drowsy, 0 = Alert
+import pandas as pd
+
+
 CLIP_LABELS = {
-    "normal.mp4":             ("alert", 0),
-    "eyes_closed.mp4":        ("microsleep", 1),
-    "yawn.mp4":               ("yawn", 1),
-    "head_nod.mp4":           ("head_nod", 1),
-    "phone_glance.mp4":       ("phone_glance", 1),
-    "head_tilt_left.mp4":     ("head_tilt", 1),
-    "head_tilt_right.mp4":    ("head_tilt", 1),
+    "normal.mp4": ("alert", 0),
+    "eyes_closed.mp4": ("microsleep", 1),
+    "yawn.mp4": ("yawn", 1),
+    "head_nod.mp4": ("head_nod", 1),
+    "phone_glance.mp4": ("phone_glance", 1),
+    "head_tilt_left.mp4": ("head_tilt", 1),
+    "head_tilt_right.mp4": ("head_tilt", 1),
 }
 
 
-def label(in_path: str, out_path: str):
-    with open(in_path, newline="") as f:
-        reader = csv.DictReader(f)
-        rows = list(reader)
-        fieldnames = reader.fieldnames + ["behavior_label", "drowsy"]
+def normalize_face_detected(value):
+    """Convert common CSV representations to True or False."""
+    if pd.isna(value):
+        return False
 
-    unmatched = set()
-    no_face_count = 0
+    if isinstance(value, bool):
+        return value
 
-    for row in rows:
-        if row["face_detected"] == "False":
-            # No face detected.
-            row["behavior_label"] = "distracted_no_face"
-            row["drowsy"] = 1
-            no_face_count += 1
-            continue
+    text = str(value).strip().lower()
 
-        clip = row["source_clip"]
+    if text in {"true", "1", "yes"}:
+        return True
 
-        if clip in CLIP_LABELS:
-            behavior, drowsy = CLIP_LABELS[clip]
-        else:
-            unmatched.add(clip)
-            behavior, drowsy = "unknown", ""
+    if text in {"false", "0", "no", ""}:
+        return False
 
-        row["behavior_label"] = behavior
-        row["drowsy"] = drowsy
-
-    with open(out_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    if unmatched:
-        print(
-            f"WARNING: these clip names in the CSV don't match CLIP_LABELS "
-            f"and were labeled 'unknown': {unmatched}"
-        )
-        print(
-            "Edit CLIP_LABELS in this script to match your actual filenames, "
-            "then re-run."
-        )
-
-    print(
-        f"{no_face_count} frames had no face detected "
-        f"-> labeled 'distracted_no_face'"
+    raise ValueError(
+        f"Invalid face_detected value: {value!r}"
     )
 
-    counts = {}
-    for row in rows:
-        counts[row["behavior_label"]] = (
-            counts.get(row["behavior_label"], 0) + 1
+
+def label_features(input_path, output_path):
+    df = pd.read_csv(input_path)
+
+    required_columns = {"source_clip", "face_detected"}
+    missing = required_columns - set(df.columns)
+
+    if missing:
+        raise ValueError(
+            f"Missing required columns: {sorted(missing)}"
         )
 
-    print(f"Labeled {len(rows)} rows: {counts}")
-    print(f"Wrote {out_path}")
+    # Normalize video filenames and face-detection values.
+    df["source_clip"] = (
+        df["source_clip"].astype(str).str.strip().str.replace(
+            "\\", "/", regex=False
+        ).str.rsplit("/", n=1).str[-1]
+    )
+
+    df["face_detected"] = df["face_detected"].map(
+        normalize_face_detected
+    )
+
+    # Labels come from the annotated source clip.
+    # Face visibility is a separate property.
+    df["behavior_label"] = df["source_clip"].map(
+        lambda clip: CLIP_LABELS.get(
+            clip, ("unknown", None)
+        )[0]
+    )
+
+    df["drowsy"] = df["source_clip"].map(
+        lambda clip: CLIP_LABELS.get(
+            clip, ("unknown", None)
+        )[1]
+    )
+
+    df["visibility_label"] = df["face_detected"].map(
+        {
+            True: "face_detected",
+            False: "face_not_detected",
+        }
+    )
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    df.to_csv(output_path, index=False)
+
+    print(f"Input rows: {len(df)}")
+    print(f"Output file: {output_path}")
+    print("\nBehavior-label counts:")
+    print(df["behavior_label"].value_counts(dropna=False))
+    print("\nDrowsiness-label counts:")
+    print(df["drowsy"].value_counts(dropna=False))
+    print("\nFace-visibility counts:")
+    print(df["visibility_label"].value_counts(dropna=False))
+
+    unknown_clips = sorted(
+        set(df.loc[df["drowsy"].isna(), "source_clip"])
+    )
+
+    if unknown_clips:
+        print("\nWARNING: These clips need labels before training:")
+        for clip in unknown_clips:
+            print(f"  - {clip}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--in", dest="in_path", default="raw_features.csv")
+def main():
+    parser = argparse.ArgumentParser(
+        description="Map source clips to behavior and drowsiness labels."
+    )
     parser.add_argument(
-        "--out",
-        dest="out_path",
-        default="labeled_features.csv"
+        "--in", dest="input_path",
+        default="raw_features.csv",
+        help="Input feature CSV"
+    )
+    parser.add_argument(
+        "--out", dest="output_path",
+        default="ayush-labelling/labeled_features.csv",
+        help="Output labeled CSV"
     )
 
     args = parser.parse_args()
-    label(args.in_path, args.out_path)
+    label_features(args.input_path, args.output_path)
+
+
+if __name__ == "__main__":
+    main()
