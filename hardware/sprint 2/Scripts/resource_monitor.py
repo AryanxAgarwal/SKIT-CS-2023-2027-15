@@ -1,19 +1,13 @@
+
 #!/usr/bin/env python3
 """
 resource_monitor.py
 
-Sprint 2 (Off-Sprint Bridging Task) - Pipeline Integration & Evaluation
-Runs an arbitrary command (e.g. a preprocessing script) as a subprocess and
-logs CPU %, RAM %, and CPU temperature at a fixed interval for as long as
-that command runs. This is how we assess hardware resource consumption
-during model preprocessing without needing to modify Sprint 2's own code.
+Sprint 2 - Pipeline Integration and Evaluation
 
-Usage:
-    python3 resource_monitor.py --config ../configs/monitor_config.yaml \
-        --command "python3 preprocessing_script.py" --label frame_augmentation
-
-    # Or just monitor the whole system for a fixed duration with no command:
-    python3 resource_monitor.py --duration 300 --label idle_baseline
+Tracks CPU usage, memory consumption, and CPU temperature while
+a selected command is running or for a specified time period.
+Results are displayed on the terminal and stored in a log file.
 """
 
 import argparse
@@ -27,133 +21,197 @@ import psutil
 import yaml
 
 
-def load_config(path):
-    if not path:
+def get_config(config_path):
+    """Load monitor settings from a YAML file."""
+    if not config_path:
         return {}
+
     try:
-        with open(path, "r") as f:
-            return yaml.safe_load(f) or {}
+        with open(config_path, "r") as config_file:
+            settings = yaml.safe_load(config_file)
+            return settings or {}
     except FileNotFoundError:
-        print(f"[resource_monitor] config file not found at {path}, using CLI/defaults")
+        print(
+            f"[resource_monitor] config file not found at {config_path}, "
+            "using CLI/defaults"
+        )
         return {}
 
 
-def read_cpu_temp():
-    """Reads CPU temp on a Raspberry Pi. Returns None if unavailable (e.g. Jetson, dev machine)."""
-    thermal_path = "/sys/class/thermal/thermal_zone0/temp"
+def get_temperature():
+    """Return CPU temperature in Celsius when the system exposes it."""
+    sensor_file = "/sys/class/thermal/thermal_zone0/temp"
+
     try:
-        with open(thermal_path, "r") as f:
-            millideg = int(f.read().strip())
-        return millideg / 1000.0
+        with open(sensor_file, "r") as sensor:
+            temperature = int(sensor.read().strip())
+        return temperature / 1000.0
     except (FileNotFoundError, ValueError):
         return None
 
 
-def parse_args():
+def get_arguments():
+    """Read command-line options."""
     parser = argparse.ArgumentParser(
-        description="Monitor CPU/RAM/temp while a command runs (or for a fixed duration)"
+        description="Monitor CPU/RAM/temp while a command runs "
+                    "(or for a fixed duration)"
     )
-    parser.add_argument("--config", default=None, help="Path to monitor_config.yaml")
-    parser.add_argument("--command", default=None,
-                         help="Command to run and monitor, e.g. 'python3 preprocess.py'")
-    parser.add_argument("--duration", type=int, default=None,
-                         help="If no --command given, monitor the system for this many seconds")
-    parser.add_argument("--interval", type=int, default=None,
-                         help="Sampling interval in seconds (overrides config, default 5)")
-    parser.add_argument("--label", default="run",
-                         help="Short label used in the log filename, e.g. 'frame_augmentation'")
-    parser.add_argument("--log-dir", default="../logs", help="Directory to write the log file to")
+
+    parser.add_argument("--config", default=None,
+                        help="Path to monitor_config.yaml")
+    parser.add_argument(
+        "--command",
+        default=None,
+        help="Command to run and monitor, e.g. 'python3 preprocess.py'"
+    )
+    parser.add_argument(
+        "--duration",
+        type=int,
+        default=None,
+        help="Monitoring duration in seconds when no command is supplied"
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=None,
+        help="Sampling interval in seconds (overrides config, default 5)"
+    )
+    parser.add_argument(
+        "--label",
+        default="run",
+        help="Short label used in the log filename"
+    )
+    parser.add_argument(
+        "--log-dir",
+        default="../logs",
+        help="Directory to write the log file to"
+    )
+
     return parser.parse_args()
 
 
 def main():
-    args = parse_args()
-    cfg = load_config(args.config)
-    interval = args.interval if args.interval is not None else cfg.get("interval_sec", 5)
+    options = get_arguments()
+    config = get_config(options.config)
 
-    if not args.command and not args.duration:
+    sample_interval = (
+        options.interval
+        if options.interval is not None
+        else config.get("interval_sec", 5)
+    )
+
+    if not options.command and not options.duration:
         print("[resource_monitor] Provide either --command or --duration.")
         return
 
-    os.makedirs(args.log_dir, exist_ok=True)
-    stamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
-    log_path = os.path.join(args.log_dir, f"resource_log_{args.label}_{stamp}.txt")
+    os.makedirs(options.log_dir, exist_ok=True)
 
-    proc = None
-    if args.command:
-        print(f"[resource_monitor] Starting subprocess: {args.command}")
-        proc = subprocess.Popen(shlex.split(args.command))
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
+    output_file = os.path.join(
+        options.log_dir,
+        f"resource_log_{options.label}_{timestamp}.txt"
+    )
 
-    start = time.time()
-    samples = []
+    process = None
 
-    with open(log_path, "w") as log_file:
-        header = (
-            f"Sprint 2 Resource Consumption Monitor\n"
-            f"Label: {args.label}\n"
+    if options.command:
+        print(f"[resource_monitor] Starting subprocess: {options.command}")
+        process = subprocess.Popen(shlex.split(options.command))
+
+    start_time = time.time()
+    readings = []
+
+    with open(output_file, "w") as log:
+        description = (
+            "Sprint 2 Resource Consumption Monitor\n"
+            f"Label: {options.label}\n"
             f"Started: {datetime.datetime.now().isoformat()}\n"
-            f"Monitored command: {args.command or f'(no command — idle monitor for {args.duration}s)'}\n"
-            f"Sampling interval: {interval}s\n"
-            f"{'-'*70}\n"
+            f"Monitored command: {options.command or f'(no command — idle monitor for {options.duration}s)'}\n"
+            f"Sampling interval: {sample_interval}s\n"
+            f"{'-' * 70}\n"
             f"{'elapsed_s':>10} {'cpu_%':>8} {'ram_%':>8} {'temp_C':>8}\n"
         )
-        print(header)
-        log_file.write(header)
-        log_file.flush()
+
+        print(description)
+        log.write(description)
+        log.flush()
 
         while True:
-            if proc is not None:
-                if proc.poll() is not None:
+            elapsed_time = time.time() - start_time
+
+            if process is not None:
+                if process.poll() is not None:
                     break
-            elif time.time() - start >= args.duration:
+            elif elapsed_time >= options.duration:
                 break
 
-            cpu_pct = psutil.cpu_percent(interval=None)
-            ram_pct = psutil.virtual_memory().percent
-            temp = read_cpu_temp()
-            temp_str = f"{temp:.1f}" if temp is not None else "n/a"
-            elapsed = time.time() - start
+            cpu_usage = psutil.cpu_percent(interval=None)
+            memory_usage = psutil.virtual_memory().percent
+            temperature = get_temperature()
 
-            samples.append((cpu_pct, ram_pct, temp))
+            temp_text = (
+                f"{temperature:.1f}"
+                if temperature is not None
+                else "n/a"
+            )
 
-            line = f"{elapsed:10.1f} {cpu_pct:8.1f} {ram_pct:8.1f} {temp_str:>8}\n"
-            print(line, end="")
-            log_file.write(line)
-            log_file.flush()
+            readings.append((cpu_usage, memory_usage, temperature))
 
-            time.sleep(interval)
+            record = (
+                f"{elapsed_time:10.1f} "
+                f"{cpu_usage:8.1f} "
+                f"{memory_usage:8.1f} "
+                f"{temp_text:>8}\n"
+            )
 
-        if proc is not None:
-            proc.wait()
+            print(record, end="")
+            log.write(record)
+            log.flush()
 
-        total_elapsed = time.time() - start
-        if samples:
-            avg_cpu = sum(s[0] for s in samples) / len(samples)
-            peak_cpu = max(s[0] for s in samples)
-            avg_ram = sum(s[1] for s in samples) / len(samples)
-            peak_ram = max(s[1] for s in samples)
-            temps = [s[2] for s in samples if s[2] is not None]
-            peak_temp = max(temps) if temps else None
+            time.sleep(sample_interval)
+
+        if process is not None:
+            process.wait()
+
+        runtime = time.time() - start_time
+
+        if readings:
+            cpu_average = sum(item[0] for item in readings) / len(readings)
+            cpu_maximum = max(item[0] for item in readings)
+
+            ram_average = sum(item[1] for item in readings) / len(readings)
+            ram_maximum = max(item[1] for item in readings)
+
+            valid_temperatures = [
+                item[2] for item in readings if item[2] is not None
+            ]
+            temperature_maximum = (
+                max(valid_temperatures) if valid_temperatures else None
+            )
         else:
-            avg_cpu = peak_cpu = avg_ram = peak_ram = 0
-            peak_temp = None
+            cpu_average = cpu_maximum = 0
+            ram_average = ram_maximum = 0
+            temperature_maximum = None
 
-        summary = (
-            f"\n{'-'*70}\n"
+        report = (
+            f"\n{'-' * 70}\n"
             f"Finished: {datetime.datetime.now().isoformat()}\n"
-            f"Total runtime: {total_elapsed:.1f}s\n"
-            f"Average CPU %: {avg_cpu:.1f}\n"
-            f"Peak CPU %: {peak_cpu:.1f}\n"
-            f"Average RAM %: {avg_ram:.1f}\n"
-            f"Peak RAM %: {peak_ram:.1f}\n"
-            f"Peak temp C: {peak_temp if peak_temp is not None else 'n/a'}\n"
+            f"Total runtime: {runtime:.1f}s\n"
+            f"Average CPU %: {cpu_average:.1f}\n"
+            f"Peak CPU %: {cpu_maximum:.1f}\n"
+            f"Average RAM %: {ram_average:.1f}\n"
+            f"Peak RAM %: {ram_maximum:.1f}\n"
+            f"Peak temp C: {temperature_maximum if temperature_maximum is not None else 'n/a'}\n"
         )
-        print(summary)
-        log_file.write(summary)
 
-    print(f"[resource_monitor] Log written to {log_path}")
-    print("[resource_monitor] Copy the summary values into "
-          "docs/resource_consumption_report.md")
+        print(report)
+        log.write(report)
+
+    print(f"[resource_monitor] Log written to {output_file}")
+    print(
+        "[resource_monitor] Copy the summary values into "
+        "docs/resource_consumption_report.md"
+    )
 
 
 if __name__ == "__main__":
