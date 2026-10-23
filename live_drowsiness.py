@@ -32,6 +32,8 @@ try:
 except ImportError:
     winsound = None
 
+sys.path.insert(0, str(Path(__file__).resolve().parent / "Features"))
+
 try:
     from landmarks import LandmarkExtractor
 except ImportError as exc:
