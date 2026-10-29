@@ -1,0 +1,47 @@
+{
+  "results": {
+    "keras_float32": {
+      "size_kb": 72.6,
+      "accuracy": 1.0,
+      "f1": 1.0,
+      "ms_per_window": 4.242,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      }
+    },
+    "tflite_float32": {
+      "size_kb": 43.5,
+      "accuracy": 1.0,
+      "f1": 1.0,
+      "ms_per_window": 0.153,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 0,
+        "tp": 13
+      }
+    },
+    "tflite_int8": {
+      "size_kb": 19.8,
+      "accuracy": 0.8182,
+      "f1": 0.8182,
+      "ms_per_window": 0.083,
+      "confusion": {
+        "tn": 9,
+        "fp": 0,
+        "fn": 4,
+        "tp": 9
+      }
+    }
+  },
+  "int8_float_agreement": 0.8182,
+  "max_probability_difference": 0.9336,
+  "size_reduction_x": 3.67,
+  "pure_int8": true,
+  "int8_io": false,
+  "calibration_windows": 200,
+  "note": "test windows are from a single person; small sample"
+}
