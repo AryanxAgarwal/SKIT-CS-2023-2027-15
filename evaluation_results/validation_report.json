@@ -15,30 +15,198 @@
   "model_input_validation": {
     "expected_shape": [
       30,
-      8
+      7
     ],
     "actual_shape": [
       30,
       7
     ],
     "timesteps_match": true,
-    "features_match": false,
-    "compatible": false
+    "features_match": true,
+    "compatible": true
+  },
+  "dataset_metrics": {
+    "total_samples": 383,
+    "class_0_count": 92,
+    "class_1_count": 291,
+    "class_0_percentage": 24.02,
+    "class_1_percentage": 75.98
   },
   "execution_benchmark": {
-    "elapsed_seconds": 3.7997961044311523e-06,
+    "elapsed_seconds": 4.699919372797012e-06,
     "samples_processed": 383,
-    "samples_per_second": 100794882.00784314
+    "samples_per_second": 81490759.65362132
   },
   "model_status": {
-    "trained_checkpoint": false,
+    "trained_checkpoint": true,
     "tensorflow_available": false,
-    "inference_evaluation": false
+    "inference_evaluation": true
   },
   "evaluation_status": {
     "dataset_validation": true,
-    "input_schema_validation": false,
-    "model_metrics_available": false,
-    "loss_curve_available": false
+    "input_schema_validation": true,
+    "model_metrics_available": true,
+    "loss_curve_available": true
+  },
+  "training_results": {
+    "checkpoint_exists": true,
+    "training_report_available": true,
+    "training_metrics": {
+      "hyperparameters": {
+        "learning_rate": 0.01,
+        "batch_size": 32,
+        "dropout": 0.4
+      },
+      "loss": "binary_crossentropy",
+      "optimizer": "adam",
+      "epochs_run": 11,
+      "best_val_loss": 1.1920930376163597e-07,
+      "note": "single-person data; same-person performance only",
+      "val": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "confusion": {
+          "tn": 9,
+          "fp": 0,
+          "fn": 0,
+          "tp": 13
+        },
+        "per_clip": {
+          "eyes_closed.mp4": {
+            "n": 2,
+            "accuracy": 1.0
+          },
+          "head_tilt_left.mp4": {
+            "n": 1,
+            "accuracy": 1.0
+          },
+          "head_tilt_right.mp4": {
+            "n": 3,
+            "accuracy": 1.0
+          },
+          "normal.mp4": {
+            "n": 9,
+            "accuracy": 1.0
+          },
+          "phone_glance.mp4": {
+            "n": 5,
+            "accuracy": 1.0
+          },
+          "yawn.mp4": {
+            "n": 2,
+            "accuracy": 1.0
+          }
+        }
+      },
+      "test": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "confusion": {
+          "tn": 9,
+          "fp": 0,
+          "fn": 0,
+          "tp": 13
+        },
+        "per_clip": {
+          "eyes_closed.mp4": {
+            "n": 2,
+            "accuracy": 1.0
+          },
+          "head_tilt_left.mp4": {
+            "n": 1,
+            "accuracy": 1.0
+          },
+          "head_tilt_right.mp4": {
+            "n": 3,
+            "accuracy": 1.0
+          },
+          "normal.mp4": {
+            "n": 9,
+            "accuracy": 1.0
+          },
+          "phone_glance.mp4": {
+            "n": 5,
+            "accuracy": 1.0
+          },
+          "yawn.mp4": {
+            "n": 2,
+            "accuracy": 1.0
+          }
+        }
+      }
+    },
+    "loss_history": [
+      {
+        "epoch": "1",
+        "train_loss": "0.13628",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "2",
+        "train_loss": "0.01748",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "3",
+        "train_loss": "0.00958",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "4",
+        "train_loss": "0.00777",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "5",
+        "train_loss": "0.05927",
+        "val_loss": "0.00016",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "6",
+        "train_loss": "0.01069",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "7",
+        "train_loss": "0.00804",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "8",
+        "train_loss": "0.007",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "9",
+        "train_loss": "0.00605",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "10",
+        "train_loss": "0.0052",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      },
+      {
+        "epoch": "11",
+        "train_loss": "0.00606",
+        "val_loss": "0.0",
+        "val_accuracy": "1.0"
+      }
+    ],
+    "loss_history_available": true
   }
 }

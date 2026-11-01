@@ -7,9 +7,12 @@ model input schema and provides execution benchmarking utilities.
 
 import json
 import time
+import logging
 from pathlib import Path
 
 import numpy as np
+
+from training_results import attach_training_results
 
 
 DATASET_PATH = Path("dataset.npz")
@@ -17,6 +20,20 @@ MANIFEST_PATH = Path("benchmark/benchmark_manifest.csv")
 
 EXPECTED_TIMESTEPS = 30
 EXPECTED_FEATURES = 7
+OUTPUT_DIR = Path("evaluation_results")
+LOG_FILE = OUTPUT_DIR / "evaluation.log"
+
+
+def setup_logging():
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    logging.basicConfig(filename=str(LOG_FILE), level=logging.INFO, force=True)
+
+
+def calculate_dataset_metrics(y):
+    total = len(y)
+    class_0 = int(np.sum(y == 0))
+    class_1 = int(np.sum(y == 1))
+    return {"total_samples": total, "class_0_count": class_0, "class_1_count": class_1, "class_0_percentage": round(class_0 / total * 100, 2) if total else 0.0, "class_1_percentage": round(class_1 / total * 100, 2) if total else 0.0}
 
 
 def load_dataset():
@@ -110,6 +127,7 @@ def build_report():
     schema = validate_input_schema(data)
 
     processing = benchmark_numpy_processing(data)
+    dataset_metrics = calculate_dataset_metrics(y)
 
     report = {
         "dataset": {
@@ -123,6 +141,7 @@ def build_report():
         },
 
         "model_input_validation": schema,
+        "dataset_metrics": dataset_metrics,
 
         "execution_benchmark": processing,
 
@@ -140,10 +159,14 @@ def build_report():
         },
     }
 
+    report = attach_training_results(report)
     return report
 
 
 def main():
+
+    setup_logging()
+    logging.info("Evaluation started")
 
     print("=" * 65)
     print("MODEL VALIDATION ENGINE")
@@ -224,10 +247,17 @@ def main():
     print("MODEL STATUS")
     print("-" * 65)
 
-    print("Trained checkpoint: NOT AVAILABLE")
-    print("TensorFlow inference: NOT AVAILABLE")
-    print("Model accuracy: NOT CALCULATED")
-    print("Loss curve: NOT AVAILABLE")
+    training = report["training_results"]
+    metrics = training["training_metrics"]
+    print("Trained checkpoint:", "AVAILABLE" if training["checkpoint_exists"] else "NOT AVAILABLE")
+    print("Training report:", "AVAILABLE" if training["training_report_available"] else "NOT AVAILABLE")
+    if metrics:
+        print("Test accuracy:", metrics["test"]["accuracy"])
+        print("Test precision:", metrics["test"]["precision"])
+        print("Test recall:", metrics["test"]["recall"])
+        print("Test F1 score:", metrics["test"]["f1"])
+        print("Test samples:", sum(metrics["test"]["confusion"].values()))
+    print("Loss history epochs:", len(training["loss_history"]))
 
     print()
     print("VALIDATION STATUS")
@@ -249,11 +279,9 @@ def main():
     )
 
     print()
-    print(
-        "NOTE: Model accuracy and loss are not "
-        "reported because a trained checkpoint "
-        "is not present."
-    )
+    print("NOTE: Test metrics are based on 22 samples from the existing training report.")
+    print("The results are limited to the reported single-person dataset.")
+    print("Execution benchmark measures NumPy preprocessing, not model inference.")
 
     output_dir = Path("evaluation_results")
     output_dir.mkdir(exist_ok=True)
@@ -279,6 +307,15 @@ def main():
     print("Report written to:")
     print(output_file)
 
+    print()
+    logging.info("Dataset samples: " + str(dataset["samples"]))
+    logging.info("Input schema compatible: " + str(schema["compatible"]))
+    logging.info("Processing time: " + str(execution["elapsed_seconds"]))
+    logging.info("Processing throughput: " + str(execution["samples_per_second"]))
+    logging.info("Model accuracy and loss unavailable because no trained checkpoint exists")
+    logging.info("Evaluation completed")
+    print("Log written to:")
+    print(LOG_FILE)
     print()
     print("STATUS: VALIDATION FRAMEWORK EXECUTED")
 

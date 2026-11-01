@@ -1,0 +1,52 @@
+{
+  "source_report": "evaluation_results\\quantization_report.json",
+  "validation_status": "REVIEW_REQUIRED",
+  "acceptance_thresholds": {
+    "maximum_accuracy_drop": 0.02,
+    "maximum_f1_drop": 0.02,
+    "minimum_int8_accuracy": 0.9
+  },
+  "float32": {
+    "size_kb": 43.0,
+    "accuracy": 1.0,
+    "f1": 1.0,
+    "ms_per_window": 0.013,
+    "confusion": {
+      "tn": 9,
+      "fp": 0,
+      "fn": 0,
+      "tp": 13
+    }
+  },
+  "int8": {
+    "size_kb": 19.2,
+    "accuracy": 0.8182,
+    "f1": 0.8182,
+    "ms_per_window": 0.008,
+    "confusion": {
+      "tn": 9,
+      "fp": 0,
+      "fn": 4,
+      "tp": 9
+    }
+  },
+  "comparison": {
+    "accuracy_drop_percentage_points": 18.18,
+    "f1_drop_percentage_points": 18.18,
+    "latency_improvement_percent": 38.46,
+    "model_size_reduction_percent": 55.35,
+    "float32_false_negatives": 0,
+    "int8_false_negatives": 4
+  },
+  "findings": [
+    "INT8 accuracy degradation exceeds 2 percentage points.",
+    "INT8 F1 degradation exceeds 2 percentage points.",
+    "INT8 accuracy is below the 90% validation threshold.",
+    "INT8 produces 4 additional false negatives."
+  ],
+  "limitations": [
+    "Validation reuses the existing quantization report.",
+    "This script does not rerun model inference.",
+    "Reported test results are based on a small, single-person dataset."
+  ]
+}

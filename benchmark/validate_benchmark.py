@@ -3,6 +3,9 @@ Validate the integrity of the benchmark manifest.
 """
 
 import csv
+import hashlib
+import json
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +13,14 @@ import numpy as np
 
 DATASET_PATH = Path("dataset.npz")
 MANIFEST_PATH = Path("benchmark/benchmark_manifest.csv")
+HASH_PATH = Path("benchmark/benchmark_hashes.json")
+
+def sha256_file(path):
+    digest = hashlib.sha256()
+    with open(path, "rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def main():
@@ -36,6 +47,29 @@ def main():
         rows = list(csv.DictReader(file))
 
     errors = []
+
+    # Verify benchmark files against their saved SHA-256 hashes
+    if not HASH_PATH.exists():
+        errors.append("Benchmark hash file not found.")
+    else:
+        try:
+            expected_hashes = json.loads(HASH_PATH.read_text(encoding="utf-8"))
+            for file_path in (DATASET_PATH, MANIFEST_PATH):
+                expected = expected_hashes.get(file_path.as_posix())
+                actual = sha256_file(file_path)
+                if expected is None:
+                    errors.append(f"Missing saved hash for {file_path.as_posix()}")
+                elif actual != expected:
+                    errors.append(f"SHA-256 mismatch: {file_path.as_posix()} has changed.")
+        except (json.JSONDecodeError, OSError) as exc:
+            errors.append(f"Could not read benchmark hashes: {exc}")
+
+    # Check duplicate sample indices
+    sample_indices = [int(row["sample_index"]) for row in rows]
+    index_counts = Counter(sample_indices)
+    duplicate_indices = sorted(index for index, count in index_counts.items() if count > 1)
+    if duplicate_indices:
+        errors.append(f"Duplicate sample indices found: {duplicate_indices}")
 
     # Check dataset and manifest sample count
     if len(rows) != len(X):
@@ -131,7 +165,7 @@ def main():
 
         raise SystemExit(1)
 
-    print("Duplicate sample indices: 0")
+    print(f"Duplicate sample indices: {len(duplicate_indices)}")
     print("Label mismatches: 0")
     print("Split leakage: 0")
     print("Hold-out classes: 0 and 1")

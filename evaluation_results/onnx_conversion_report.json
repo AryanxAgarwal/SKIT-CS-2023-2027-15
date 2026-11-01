@@ -1,0 +1,19 @@
+{
+  "source_model": "models\\cnn_drowsiness.keras",
+  "output_model": "models\\cnn_drowsiness.onnx",
+  "expected_input_shape": [
+    null,
+    30,
+    8
+  ],
+  "opset": 13,
+  "conversion_method": "Keras SavedModel via tf2onnx.from_function",
+  "conversion_status": "SUCCESS",
+  "onnx_validation": "PASSED",
+  "actual_input_shape": [
+    30,
+    8
+  ],
+  "saved_model_signature": "serve",
+  "model_size_bytes": 46755
+}

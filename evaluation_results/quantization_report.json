@@ -4,7 +4,7 @@
       "size_kb": 72.6,
       "accuracy": 1.0,
       "f1": 1.0,
-      "ms_per_window": 4.242,
+      "ms_per_window": 1.772,
       "confusion": {
         "tn": 9,
         "fp": 0,
@@ -13,10 +13,10 @@
       }
     },
     "tflite_float32": {
-      "size_kb": 43.5,
+      "size_kb": 43.0,
       "accuracy": 1.0,
       "f1": 1.0,
-      "ms_per_window": 0.153,
+      "ms_per_window": 0.013,
       "confusion": {
         "tn": 9,
         "fp": 0,
@@ -25,10 +25,10 @@
       }
     },
     "tflite_int8": {
-      "size_kb": 19.8,
+      "size_kb": 19.2,
       "accuracy": 0.8182,
       "f1": 0.8182,
-      "ms_per_window": 0.083,
+      "ms_per_window": 0.008,
       "confusion": {
         "tn": 9,
         "fp": 0,
@@ -39,9 +39,10 @@
   },
   "int8_float_agreement": 0.8182,
   "max_probability_difference": 0.9336,
-  "size_reduction_x": 3.67,
+  "size_reduction_x": 3.78,
   "pure_int8": true,
   "int8_io": false,
   "calibration_windows": 200,
-  "note": "test windows are from a single person; small sample"
+  "conversion_validation": "PASSED",
+  "note": "Validation uses the existing single-person test dataset. Further testing on diverse subjects is required."
 }
