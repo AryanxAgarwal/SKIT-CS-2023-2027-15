@@ -70,7 +70,7 @@ DEFAULT_EAR_CLOSED = 0.19   # used if calibration fails
 # Rules (seconds)
 MAR_YAWN_THRESHOLD = 0.50
 EYE_CLOSED_SECONDS = 0.8    # sustained closure = microsleep warning
-YAWN_SECONDS = 1.5
+YAWN_SECONDS = 1.0
 NO_FACE_SECONDS = 3.0
 PERCLOS_WINDOW = 60.0
 PERCLOS_MIN_COVERAGE = 20.0
@@ -250,6 +250,19 @@ def main():
                 mar = safe_float(feats.get("mar"))
                 sequence.append(features_to_vector(feats))
 
+                # ---- yawn (MAR, time-based, counted once per yawn; works from the first frame)
+                if mar > MAR_YAWN_THRESHOLD:
+                    yawn_since = yawn_since or now
+                    if (now - yawn_since) >= YAWN_SECONDS:
+                        yawn_active = True
+                        if not yawn_counted:
+                            yawn_times.append(now)
+                            yawn_counted = True
+                            alarm.beep()                      # short beep for every new yawn
+                            log.write("YAWN", ear, mar, 0.0)
+                else:
+                    yawn_since, yawn_counted = None, False
+
                 # ---- calibration
                 if not calibrated:
                     if calib_start is None:
@@ -273,17 +286,6 @@ def main():
                     else:
                         closed_since = None
 
-                    # ---- yawn (time-based, counted once per yawn)
-                    if mar > MAR_YAWN_THRESHOLD:
-                        yawn_since = yawn_since or now
-                        if (now - yawn_since) >= YAWN_SECONDS:
-                            yawn_active = True
-                            if not yawn_counted:
-                                yawn_times.append(now)
-                                yawn_counted = True
-                                log.write("YAWN", ear, mar, 0.0)
-                    else:
-                        yawn_since, yawn_counted = None, False
 
                 # ---- CNN (secondary signal)
                 if model is not None and len(sequence) == SEQUENCE_LENGTH \
@@ -355,7 +357,8 @@ def main():
                 draw_text(frame, f"MAR {mar:.3f} (yawn > {MAR_YAWN_THRESHOLD:.2f})", (12, 92))
                 held = (now - closed_since) if closed_since else 0.0
                 draw_text(frame, f"Eyes closed: {held:.1f}s / {EYE_CLOSED_SECONDS:.1f}s", (12, 114))
-                draw_text(frame, f"Yawns (10 min): {len(yawn_times)}", (12, 136))
+                held_y = (now - yawn_since) if yawn_since else 0.0
+                draw_text(frame, f"Yawns (10 min): {len(yawn_times)}   mouth open {held_y:.1f}s/{YAWN_SECONDS:.1f}s", (12, 136))
                 p_txt = f"{perclos * 100:.0f}%" if perclos_ready else "warming up"
                 draw_text(frame, f"PERCLOS (60 s): {p_txt}", (12, 158))
                 if model is not None:
@@ -364,6 +367,8 @@ def main():
                     else:
                         draw_text(frame, f"CNN: {'DROWSY' if cnn_drowsy else 'ALERT'} ({cnn_smoothed:.2f})",
                                   (12, 180), COL_BAD if cnn_drowsy else COL_OK)
+            if yawn_active:
+                draw_text(frame, "YAWN DETECTED", (330, 80), COL_WARN, 0.9, 2)
             draw_text(frame, f"FPS {fps:.0f}", (12, frame.shape[0] - 14), (200, 200, 200), 0.45)
 
             cv2.imshow("Driver Drowsiness Monitor", frame)
