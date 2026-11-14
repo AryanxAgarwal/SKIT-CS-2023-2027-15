@@ -1,136 +1,90 @@
-\# SYSTEM ARCHITECTURE AND QUALITY ASSURANCE REPORT
+# SYSTEM ARCHITECTURE AND QUALITY ASSURANCE REPORT
 
+**Project:** SKIT-CS-2023-2027-15
 
+**Project Title:** Driver Drowsiness Detection System
 
-\*\*Project:\*\* SKIT-CS-2023-2027-15  
+**Prepared by:** Chiranshu Kumar Mudgal
 
-\*\*Project Title:\*\* Driver Drowsiness Detection System  
+**Role:** Systems Architecture and Quality Assurance
 
-\*\*Prepared by:\*\* Chiranshu Kumar Mudgal  
+**Reporting Period:** Sprint 1 – Sprint 3 (Up to 12 November 2026)
 
-\*\*Role:\*\* Systems Architecture and Quality Assurance  
+**Report Date:** 16 November 2026
 
-\*\*Reporting Period:\*\* Sprint 1 – Sprint 3 (Up to 12 November 2026)  
+---
 
-\*\*Report Date:\*\* 16 November 2026
-
-
-
-\---
-
-
-
-\## 1. Introduction
-
-
+## 1. Introduction
 
 This report documents the system architecture, validation, model conversion, runtime testing and quality assurance activities performed for the Driver Drowsiness Detection System.
 
-
-
 The primary objective was to verify the reliability of data processing, evaluate model performance, validate deployment formats and develop independent runtime quality assurance components.
 
+## 2. Sprint 1 – Baseline Integration and Data Flow Verification
 
+### Activities performed
 
-\## 2. Sprint 1 – Baseline Integration and Data Flow Verification
+- Reviewed the existing frame ingestion validation pipeline.
 
+- Examined the automated GitHub Actions testing workflow.
 
+- Verified dataset frame consistency and validation checks.
 
-\### Activities performed
+- Executed existing unit tests for EAR and MAR calculations.
 
+- Reviewed the feature and label data pipeline.
 
+### Verification results
 
-\- Reviewed the existing frame ingestion validation pipeline.
+- Frame ingestion tests: 4 passed.
 
-\- Examined the automated GitHub Actions testing workflow.
+- EAR and MAR tests: 6 passed.
 
-\- Verified dataset frame consistency and validation checks.
+- Total existing tests: 10 passed.
 
-\- Executed existing unit tests for EAR and MAR calculations.
+**Status:** Verified through local test execution. Latest GitHub Actions execution was not independently confirmed.
 
-\- Reviewed the feature and label data pipeline.
+## 3. Sprint 2 – Model Validation and Deployment Evaluation
 
+### 3.1 Benchmark Data Batch Management
 
+- Executed benchmark dataset validation.
 
-\### Verification results
+- Verified 383 dataset samples.
 
+- Checked manifest consistency and input dimensions.
 
+- Checked duplicate records, label mismatches and split leakage.
 
-\- Frame ingestion tests: 4 passed.
+- Verified hold-out clips and class representation.
 
-\- EAR and MAR tests: 6 passed.
+### 3.2 Model Validation Framework
 
-\- Total existing tests: 10 passed.
+- Executed the evaluation framework.
 
+- Verified model input compatibility.
 
+- Reviewed training loss history and evaluation metrics.
 
-\*\*Status:\*\* Verified through local test execution. Latest GitHub Actions execution was not independently confirmed.
+- Generated validation logs and reports.
 
-
-
-\## 3. Sprint 2 – Model Validation and Deployment Evaluation
-
-
-
-\### 3.1 Benchmark Data Batch Management
-
-
-
-\- Executed benchmark dataset validation.
-
-\- Verified 383 dataset samples.
-
-\- Checked manifest consistency and input dimensions.
-
-\- Checked duplicate records, label mismatches and split leakage.
-
-\- Verified hold-out clips and class representation.
-
-
-
-\### 3.2 Model Validation Framework
-
-
-
-\- Executed the evaluation framework.
-
-\- Verified model input compatibility.
-
-\- Reviewed training loss history and evaluation metrics.
-
-\- Generated validation logs and reports.
-
-
-
-\### 3.3 Model Serialization and Conversion
-
-
+### 3.3 Model Serialization and Conversion
 
 Validated the availability and loading of:
 
+- Keras model checkpoint.
 
+- ONNX converted model.
 
-\- Keras model checkpoint.
+- TFLite Float32 model.
 
-\- ONNX converted model.
-
-\- TFLite Float32 model.
-
-\- TFLite INT8 model.
-
-
+- TFLite INT8 model.
 
 ONNX and TFLite model input compatibility was checked using the available eight-feature training input format.
 
-
-
-\### 3.4 Quantization Evaluation
-
-
+### 3.4 Quantization Evaluation
 
 The existing quantization report showed the following results:
-
-
 
 | Model | Accuracy | F1 Score |
 
@@ -142,147 +96,91 @@ The existing quantization report showed the following results:
 
 | TFLite INT8 | 81.82% | 81.82% |
 
-
-
 The INT8 model showed an 18.18 percentage-point reduction in accuracy and F1 score compared with Float32.
 
-
-
-\*\*Deployment decision:\*\* Float32 is the preferred candidate. INT8 requires further optimization and validation before deployment approval.
-
-
+**Deployment decision:** Float32 is the preferred candidate. INT8 requires further optimization and validation before deployment approval.
 
 Note: These reported evaluation metrics use the existing limited test dataset and should not be interpreted as evidence of general performance across diverse drivers.
 
+## 4. Sprint 3 – Runtime Architecture and Quality Assurance
 
-
-\## 4. Sprint 3 – Runtime Architecture and Quality Assurance
-
-
-
-\### 4.1 Runtime State Machine
-
-
+### 4.1 Runtime State Machine
 
 Developed an independent state machine with four states:
 
+- INIT
 
+- MONITORING
 
-\- INIT
+- ALERT
 
-\- MONITORING
-
-\- ALERT
-
-\- ERROR
-
-
+- ERROR
 
 Implemented transition validation, state history and error recovery.
 
+**Verification:** 10 unit tests passed.
 
-
-\*\*Verification:\*\* 10 unit tests passed.
-
-
-
-\### 4.2 Parallel Processing Architecture
-
-
+### 4.2 Parallel Processing Architecture
 
 Developed an independent runtime pipeline containing:
 
+- Video capture worker.
 
+- Model inference worker.
 
-\- Video capture worker.
+- Bounded frame queue.
 
-\- Model inference worker.
+- Bounded result queue.
 
-\- Bounded frame queue.
+- Error reporting.
 
-\- Bounded result queue.
+- Controlled thread shutdown.
 
-\- Error reporting.
+**Verification:** 9 unit tests passed after an additional post-deadline validation improvement.
 
-\- Controlled thread shutdown.
-
-
-
-\*\*Verification:\*\* 9 unit tests passed after an additional post-deadline validation improvement.
-
-
-
-\### 4.3 Runtime Helper and Alarm Validation
-
-
+### 4.3 Runtime Helper and Alarm Validation
 
 Tested numerical input handling, eight-feature vector generation and background alarm execution.
 
+**Verification:** 5 unit tests passed.
 
-
-\*\*Verification:\*\* 5 unit tests passed.
-
-
-
-\### 4.4 Thread Stability Testing
-
-
+### 4.4 Thread Stability Testing
 
 Performed simulated high-load and repeated lifecycle tests.
 
-
-
 Verified:
 
+- Bounded queue capacity.
 
+- Repeated start-stop cycles.
 
-\- Bounded queue capacity.
+- Worker exception handling.
 
-\- Repeated start-stop cycles.
+- Thread termination.
 
-\- Worker exception handling.
+**Verification:** 4 unit tests passed.
 
-\- Thread termination.
-
-
-
-\*\*Verification:\*\* 4 unit tests passed.
-
-
-
-\### 4.5 End-to-End Software Integration Testing
-
-
+### 4.5 End-to-End Software Integration Testing
 
 Executed simulated integration tests covering:
 
+- Frame generation.
 
+- Frame queue processing.
 
-\- Frame generation.
+- Inference result generation.
 
-\- Frame queue processing.
+- State transition to ALERT.
 
-\- Inference result generation.
+- Error reporting and transition to ERROR.
 
-\- State transition to ALERT.
+- Controlled shutdown.
 
-\- Error reporting and transition to ERROR.
+**Verification:** 2 integration tests passed.
 
-\- Controlled shutdown.
-
-
-
-\*\*Verification:\*\* 2 integration tests passed.
-
-
-
-\## 5. Overall Test Summary
-
-
+## 5. Overall Test Summary
 
 The following results were obtained through separate local test suite executions.
-
-
 
 | Test suite | Passed |
 
@@ -300,115 +198,70 @@ The following results were obtained through separate local test suite executions
 
 | Existing project tests | 10 |
 
-| \*\*Total\*\* | \*\*40\*\* |
-
-
+| **Total** | **40** |
 
 All 40 tests passed across the recorded local executions, with no test failures.
 
-
-
-\## 6. Post-Deadline QA Improvement – 14 November 2026
-
-
+## 6. Post-Deadline QA Improvement – 14 November 2026
 
 After the reporting deadline, an additional improvement was made to the independent runtime threading module.
 
-
-
-\### 6.1 Capture Worker Optimization
-
-
+### 6.1 Capture Worker Optimization
 
 The capture worker was updated to introduce a short 10 ms wait when no video frame is available.
 
-
-
 This prevents unnecessary continuous looping when the capture function returns None and helps reduce avoidable CPU usage.
 
+### 6.2 Additional Test Validation
 
-
-\### 6.2 Additional Test Validation
-
-
-
-A dedicated test, `test\_none\_frame\_does\_not\_busy\_spin`, was added to verify this behaviour.
-
-
+A dedicated test, test\_none\_frame\_does\_not\_busy\_spin, was added to verify this behaviour.
 
 After the update:
 
+- Runtime threading tests: 9 passed.
 
+- Complete evaluation test suite: 30 passed.
 
-\- Runtime threading tests: 9 passed.
+- Existing project test suite: 10 passed.
 
-\- Complete evaluation test suite: 30 passed.
+**Status:** Post-deadline improvement verified through local automated tests.
 
-\- Existing project test suite: 10 passed.
-
-
-
-\*\*Status:\*\* Post-deadline improvement verified through local automated tests.
-
-
-
-\## 7. Known Limitations and Pending Validation
-
-
+## 7. Known Limitations and Pending Validation
 
 The following activities require further validation:
 
+1. Integration of the independent threading pipeline with the actual live application.
 
+2. Connection of the new state machine to the production control loop.
 
-1\. Integration of the independent threading pipeline with the actual live application.
+3. End-to-end testing using an actual webcam and trained CNN model with the integrated threading pipeline.
 
-2\. Connection of the new state machine to the production control loop.
+4. Prolonged hardware stability testing.
 
-3\. End-to-end testing using an actual webcam and trained CNN model with the integrated threading pipeline.
+5. Memory usage and deadlock profiling under real runtime load.
 
-4\. Prolonged hardware stability testing.
+6. Further investigation of INT8 accuracy degradation.
 
-5\. Memory usage and deadlock profiling under real runtime load.
-
-6\. Further investigation of INT8 accuracy degradation.
-
-7\. Verification of the latest GitHub Actions workflow execution.
-
-
+7. Verification of the latest GitHub Actions workflow execution.
 
 The simulated integration tests do not establish successful integration with the actual camera, CNN and user interface.
 
-
-
-\## 8. Conclusion
-
-
+## 8. Conclusion
 
 The baseline data validation, model evaluation and conversion checks have been executed. Independent runtime architecture and quality assurance modules have also been developed and tested.
 
-
-
 A total of 40 local unit and integration tests passed across separate test suite executions.
-
-
 
 An additional capture worker optimization was implemented and verified after the reporting deadline.
 
-
-
 Further production integration and hardware-level validation remain necessary before declaring the complete runtime architecture fully validated.
 
+---
 
+**Prepared by:** Chiranshu Kumar Mudgal
 
-\---
+**Role:** Systems Architecture and Quality Assurance
 
+**Project:** Driver Drowsiness Detection System
 
-
-\*\*Prepared by:\*\* Chiranshu Kumar Mudgal  
-
-\*\*Role:\*\* Systems Architecture and Quality Assurance  
-
-\*\*Project:\*\* Driver Drowsiness Detection System  
-
-\*\*Institution:\*\* Swami Keshvanand Institute of Technology, Management \& Gramothan, Jaipur
-
+**Institution:** Swami Keshvanand Institute of Technology, Management & Gramothan, Jaipur
